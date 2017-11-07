@@ -24,8 +24,6 @@ template <typename T = double>
 class Tensor
 {
 public:
-	using type = T;
-	
 	/// \brief Vectorizes a list of tensors.
 	///
 	/// Each tensor in the parameter becomes a subview into a single, contiguous vector.
@@ -863,17 +861,6 @@ public:
 		return *this;
 	}
 	
-	/// \brief Adds a scalar to each element in this tensor.
-	///
-	/// \param alpha The scalar.
-	/// \return This tensor, for chaining.
-	Tensor &add(T alpha)
-	{
-		for(T &v : *this)
-			v += alpha;
-		return *this;
-	}
-	
 	// MARK: Algebra
 	
 	/// Hadamard/elementwise/pointwise product.
@@ -884,21 +871,6 @@ public:
 		for(T &el : *this)
 		{
 			el *= *i;
-			++i;
-		}
-		return *this;
-	}
-	
-	/// \brief Compute elementwise/pointwise sum (general purpose).
-	///
-	/// This is a general purpose function for any size of tensor.
-	Tensor &add(const Tensor &x, T alpha = 1)
-	{
-		NNAssertEquals(shape(), x.shape(), "Incompatible operands to add!");
-		auto i = x.begin();
-		for(T &el : *this)
-		{
-			el += *i * alpha;
 			++i;
 		}
 		return *this;

@@ -41,36 +41,6 @@ std::ostream &operator<<(std::ostream &out, const Tensor<T> &t)
 	return out;
 }
 
-/// Operator overload for addition assignment.
-template <typename T>
-Tensor<T> &operator+=(Tensor<T> &lhs, const Tensor<T> &rhs)
-{
-	return lhs.add(rhs);
-}
-
-/// Operator overload for addition.
-template <typename T>
-Tensor<T> operator+(const Tensor<T> &lhs, const Tensor<T> &rhs)
-{
-	Tensor<T> sum = lhs.copy();
-	return sum += rhs;
-}
-
-/// Operator overload for subtraction assignment.
-template <typename T>
-Tensor<T> &operator-=(Tensor<T> &lhs, const Tensor<T> &rhs)
-{
-	return lhs.add(rhs, -1);
-}
-
-/// Operator overload for subtraction.
-template <typename T>
-Tensor<T> operator-(const Tensor<T> &lhs, const Tensor<T> &rhs)
-{
-	Tensor<T> difference = lhs.copy();
-	return difference -= rhs;
-}
-
 }
 
 #endif

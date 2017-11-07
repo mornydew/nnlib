@@ -7,8 +7,6 @@
 namespace nnlib
 {
 
-// MARK: Vector/scalar operations
-
 template <typename T, typename U>
 Tensor<T> &operator*=(Tensor<T> &x, U alpha)
 {
@@ -46,7 +44,53 @@ Tensor<T> operator/(const Tensor<T> &x, U alpha)
 	return x * (1.0 / alpha);
 }
 
-// MARK: Vector/Vector operations
+template <typename T, typename U = T>
+Tensor<T> &add(Tensor<T> &y, const Tensor<T> &x, U alpha = 1)
+{
+	NNAssertEquals(y.shape(), x.shape(), "Incompatible operands!");
+	
+	switch(y.dims())
+	{
+	case 1:
+		Math<T>::vAdd_v(x.ptr(), x.size(), x.stride(0), y.ptr(), y.stride(0), alpha);
+		break;
+	case 2:
+		Math<T>::mAdd_m(x.ptr(), x.size(0), x.size(1), x.stride(0), y.ptr(), y.stride(0), alpha);
+		break;
+	default:
+		auto i = x.begin();
+		for(auto &j : y)
+			j += alpha * *i, ++i;
+	}
+	
+	return y;
+}
+
+template <typename T>
+Tensor<T> &operator+=(Tensor<T> &y, const Tensor<T> &x)
+{
+	return add(y, x);
+}
+
+template <typename T>
+Tensor<T> operator+(const Tensor<T> &y, const Tensor<T> &x)
+{
+	Tensor<T> copy = y.copy();
+	return add(copy, x);
+}
+
+template <typename T>
+Tensor<T> &operator-=(Tensor<T> &y, const Tensor<T> &x)
+{
+	return add(y, x, -1);
+}
+
+template <typename T>
+Tensor<T> operator-(const Tensor<T> &y, const Tensor<T> &x)
+{
+	Tensor<T> copy = y.copy();
+	return add(copy, x, -1);
+}
 
 /// y = alpha * x + beta * y
 template <typename T, typename U, typename V = double, typename W = double>
