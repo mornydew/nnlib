@@ -71,36 +71,6 @@ Tensor<T> operator-(const Tensor<T> &lhs, const Tensor<T> &rhs)
 	return difference -= rhs;
 }
 
-/// Operator overload for primitive multiplication assignment.
-template <typename T, typename U>
-Tensor<T> &operator*=(Tensor<T> &lhs, const U &rhs)
-{
-	return lhs.scale(rhs);
-}
-
-/// Operator overload for primitive multiplication.
-template <typename T, typename U>
-Tensor<T> operator*(const Tensor<T> &lhs, const U &rhs)
-{
-	Tensor<T> product = lhs.copy();
-	return product *= rhs;
-}
-
-/// Operator overload for primitive division assignment.
-template <typename T, typename U>
-Tensor<T> &operator/=(Tensor<T> &lhs, const U &rhs)
-{
-	return lhs.scale(1.0 / rhs);
-}
-
-/// Operator overload for primitive division.
-template <typename T, typename U>
-Tensor<T> operator/(const Tensor<T> &lhs, const U &rhs)
-{
-	Tensor<T> quotient = lhs.copy();
-	return quotient /= rhs;
-}
-
 }
 
 #endif

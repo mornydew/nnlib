@@ -64,7 +64,7 @@ void TestBatchNorm()
 	{
 		NNAssertLessThan(fabs(bn.output().select(1, i).mean()), 1e-9, "BatchNorm::forward (inference) failed! Non-zero mean!");
 		NNAssertAlmostEquals(
-			bn.output().select(1, i).scale(sqrt(3) / sqrt(2)).variance(), 1, 1e-9,
+			(bn.output().select(1, i) * (sqrt(3) / sqrt(2))).variance(), 1, 1e-9,
 			"BatchNorm::forward (inference) failed! Non-unit variance!"
 		);
 	}

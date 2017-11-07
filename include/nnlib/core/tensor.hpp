@@ -24,6 +24,8 @@ template <typename T = double>
 class Tensor
 {
 public:
+	using type = T;
+	
 	/// \brief Vectorizes a list of tensors.
 	///
 	/// Each tensor in the parameter becomes a subview into a single, contiguous vector.
@@ -861,17 +863,6 @@ public:
 		return *this;
 	}
 	
-	/// \brief Multiplies this tensor by a scalar.
-	///
-	/// \param alpha The scalar.
-	/// \return This tensor, for chaining.
-	Tensor &scale(T alpha)
-	{
-		for(T &v : *this)
-			v *= alpha;
-		return *this;
-	}
-	
 	/// \brief Adds a scalar to each element in this tensor.
 	///
 	/// \param alpha The scalar.
@@ -1035,7 +1026,10 @@ public:
 	{
 		NNAssertGreaterThan(to, from, "Invalid normalization range!");
 		T small = min(), large = max();
-		return add(-small).scale((to - from) / (large - small)).add(from);
+		T scale = (to - from) / (large - small);
+		for(auto &x : *this)
+			x = (x - small) * scale + from;
+		return *this;
 	}
 	
 	/// Clip the elements of this tensor such that all elements lie in [smallest, largest]

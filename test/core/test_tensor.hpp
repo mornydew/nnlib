@@ -204,7 +204,7 @@ void TestTensor()
 	for(auto &v : vector)
 		NNAssertAlmostEquals(v, 5280, 5, "Tensor::randn(T, T, T) failed!");
 	
-	view = vector.copy().scale(2);
+	view = vector * 2;
 	for(auto x = view.begin(), y = vector.begin(); x != view.end(); ++x, ++y)
 		NNAssertAlmostEquals(*x, 2 * *y, 1e-12, "Tensor::scale failed!");
 	
@@ -412,7 +412,7 @@ void TestTensor()
 	for(auto x = view.begin(), y = empty.begin(); x != view.end(); ++x, ++y)
 		NNAssertAlmostEquals(3 * *x, *y, 1e-12, "operator+=(Tensor, Tensor) failed!");
 	
-	empty = view.copy().scale(2.5) - view;
+	empty = (view * 2.5) - view;
 	for(auto x = view.begin(), y = empty.begin(); x != view.end(); ++x, ++y)
 		NNAssertAlmostEquals(1.5 * *x, *y, 1e-12, "operator-(Tensor, Tensor) failed!");
 	

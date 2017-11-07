@@ -17,7 +17,7 @@ void TestNLL()
 	
 	critic.average(true);
 	nll = critic.forward(inp, tgt);
-	dif.scale(1.0/6.0);
+	dif *= 1.0 / 6.0;
 	NNHardAssert(fabs(nll - dif.sum()) < 1e-12, "NLL<>::forward with average failed!");
 	
 	critic.average(false);

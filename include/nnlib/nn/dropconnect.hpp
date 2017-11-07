@@ -118,7 +118,7 @@ public:
 			m_output = m_module->forward(input);
 		}
 		else
-			m_output = m_module->forward(input).scale(1 - m_dropProbability);
+			m_output = m_module->forward(input) *= (1 - m_dropProbability);
 		
 		return m_output;
 	}
@@ -131,7 +131,7 @@ public:
 			m_module->params().copy(m_backup);
 		}
 		else
-			m_inGrad = m_module->backward(input, outGrad).scale(1 - m_dropProbability);
+			m_inGrad = m_module->backward(input, outGrad) *= (1 - m_dropProbability);
 		
 		return m_inGrad;
 	}

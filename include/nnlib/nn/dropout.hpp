@@ -78,7 +78,7 @@ public:
 		if(m_training)
 			return m_output.copy(input).pointwiseProduct(m_mask.bernoulli(1 - m_dropProbability));
 		else
-			return m_output.copy(input).scale(1 - m_dropProbability);
+			return m_output.copy(input) *= (1 - m_dropProbability);
 	}
 	
 	/// Backward propagate input and output gradient, returning input gradient.
@@ -91,7 +91,7 @@ public:
 		if(m_training)
 			return m_inGrad.copy(outGrad).pointwiseProduct(m_mask);
 		else
-			return m_inGrad.copy(outGrad).scale(1 - m_dropProbability);
+			return m_inGrad.copy(outGrad) *= (1 - m_dropProbability);
 	}
 	
 	// MARK: Buffers

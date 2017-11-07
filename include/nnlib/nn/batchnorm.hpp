@@ -157,7 +157,7 @@ public:
 			
 			// Get means
 			input.sum(m_means, 0);
-			m_means.scale(norm);
+			m_means *= norm;
 			
 			// Get unnormalized variances (temporarily stored in m_invStds)
 			for(size_t i = 0; i < n; ++i)
@@ -169,13 +169,13 @@ public:
 			}
 			
 			// Update running mean
-			vAdd_v(m_means.copy().scale(m_momentum), m_runningMeans.scale(1 - m_momentum));
+			vAdd_v(m_means * m_momentum, m_runningMeans *= (1 - m_momentum));
 			
 			// Update running variance (normalize as sample)
-			vAdd_v(m_invStds.copy().scale(m_momentum / (n - 1)), m_runningVars.scale(1 - m_momentum));
+			vAdd_v(m_invStds * (m_momentum / (n - 1)), m_runningVars *= (1 - m_momentum));
 			
 			// Now normalize variance as population; will invert and sqrt after this if statement
-			m_invStds.scale(norm);
+			m_invStds *= norm;
 			
 			// Use the batch statistics
 			means = m_means;

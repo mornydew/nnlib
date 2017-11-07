@@ -9,45 +9,48 @@ namespace nnlib
 
 // MARK: Vector/scalar operations
 
-/// x[i] = alpha
-template <typename T = double, typename U = double>
-void vFill(Tensor<T> &x, U alpha)
+template <typename T, typename U>
+Tensor<T> &operator*=(Tensor<T> &x, U alpha)
 {
-	NNAssertEquals(x.dims(), 1, "Expected a vector!");
-	Math<T>::vFill(x.ptr(), x.size(), x.stride(0), alpha);
+	switch(x.dims())
+	{
+	case 1:
+		Math<T>::vScale(x.ptr(), x.size(), x.stride(0), alpha);
+		break;
+	case 2:
+		Math<T>::mScale(x.ptr(), x.size(0), x.size(1), x.stride(0), alpha);
+		break;
+	default:
+		for(auto &v : x)
+			v *= alpha;
+	}
+	return x;
 }
 
-/// x[i] *= alpha
-template <typename T = double, typename U = double>
-void vScale(Tensor<T> &x, U alpha)
+template <typename T, typename U>
+Tensor<T> operator*(const Tensor<T> &x, U alpha)
 {
-	NNAssertEquals(x.dims(), 1, "Expected a vector!");
-	Math<T>::vScale(x.ptr(), x.size(), x.stride(0), alpha);
+	Tensor<T> copy = x.copy();
+	return copy *= alpha;
 }
 
-// MARK: Matrix/scalar operations
-
-/// A[i][j] = alpha
-template <typename T = double, typename U = double>
-void mFill(Tensor<T> &A, U alpha)
+template <typename T, typename U>
+Tensor<T> &operator/=(Tensor<T> &x, U alpha)
 {
-	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
-	Math<T>::mFill(A.ptr(), A.size(0), A.size(1), A.stride(0), alpha);
+	return x *= (1.0 / alpha);
 }
 
-/// A[i][j] *= alpha
-template <typename T = double, typename U = double>
-void mScale(Tensor<T> &A, U alpha)
+template <typename T, typename U>
+Tensor<T> operator/(const Tensor<T> &x, U alpha)
 {
-	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
-	Math<T>::mScale(A.ptr(), A.size(0), A.size(1), A.stride(0), alpha);
+	return x * (1.0 / alpha);
 }
 
 // MARK: Vector/Vector operations
 
 /// y = alpha * x + beta * y
-template <typename T = double, typename U = double, typename V = double>
-void vAdd_v(const Tensor<T> &x, Tensor<T> &y, U alpha = 1, V beta = 1)
+template <typename T, typename U, typename V = double, typename W = double>
+void vAdd_v(const Tensor<T> &x, U &&y, V alpha = 1, W beta = 1)
 {
 	NNAssertEquals(x.dims(), 1, "Expected a vector!");
 	NNAssertEquals(y.dims(), 1, "Expected a vector!");
@@ -58,7 +61,7 @@ void vAdd_v(const Tensor<T> &x, Tensor<T> &y, U alpha = 1, V beta = 1)
 // MARK: Matrix/Vector operations
 
 /// A = alpha * x <*> y + beta * A, <*> = outer product
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void mAdd_vv(const Tensor<T> &x, const Tensor<T> &y, Tensor<T> &A, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(x.dims(), 1, "Expected a vector!");
@@ -70,7 +73,7 @@ void mAdd_vv(const Tensor<T> &x, const Tensor<T> &y, Tensor<T> &A, U alpha = 1, 
 }
 
 /// y = alpha * A * x^T + beta * y
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void vAdd_mv(const Tensor<T> &A, const Tensor<T> &x, Tensor<T> &y, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
@@ -83,7 +86,7 @@ void vAdd_mv(const Tensor<T> &A, const Tensor<T> &x, Tensor<T> &y, U alpha = 1, 
 }
 
 /// y = alpha * A^T * x^T + beta * y
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void vAdd_mtv(const Tensor<T> &A, const Tensor<T> &x, Tensor<T> &y, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
@@ -98,7 +101,7 @@ void vAdd_mtv(const Tensor<T> &A, const Tensor<T> &x, Tensor<T> &y, U alpha = 1,
 // MARK: Matrix/Matrix operations
 
 /// B = alpha * A + beta * B
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void mAdd_m(const Tensor<T> &A, Tensor<T> &B, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
@@ -108,7 +111,7 @@ void mAdd_m(const Tensor<T> &A, Tensor<T> &B, U alpha = 1, V beta = 1)
 }
 
 /// B = alpha * A^T + beta * B
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void mAdd_mt(const Tensor<T> &A, Tensor<T> &B, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
@@ -119,7 +122,7 @@ void mAdd_mt(const Tensor<T> &A, Tensor<T> &B, U alpha = 1, V beta = 1)
 }
 
 /// C = alpha * A * B + beta * C
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void mAdd_mm(const Tensor<T> &A, const Tensor<T> &B, Tensor<T> &C, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
@@ -135,7 +138,7 @@ void mAdd_mm(const Tensor<T> &A, const Tensor<T> &B, Tensor<T> &C, U alpha = 1, 
 }
 
 /// C = alpha * A^T * B + beta * C
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void mAdd_mtm(const Tensor<T> &A, const Tensor<T> &B, Tensor<T> &C, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");
@@ -151,7 +154,7 @@ void mAdd_mtm(const Tensor<T> &A, const Tensor<T> &B, Tensor<T> &C, U alpha = 1,
 }
 
 /// C = alpha * A * B^T + beta * C
-template <typename T = double, typename U = double, typename V = double>
+template <typename T, typename U = T, typename V = T>
 void mAdd_mmt(const Tensor<T> &A, const Tensor<T> &B, Tensor<T> &C, U alpha = 1, V beta = 1)
 {
 	NNAssertEquals(A.dims(), 2, "Expected a matrix!");

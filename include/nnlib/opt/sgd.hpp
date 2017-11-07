@@ -58,7 +58,7 @@ public:
 		if(m_momentum)
 		{
 			// apply momentum
-			m_velocity.scale(m_momentum);
+			m_velocity *= m_momentum;
 			vAdd_v(m_grads, m_velocity);
 			
 			// Nesterov step
