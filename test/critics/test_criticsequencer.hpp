@@ -19,7 +19,7 @@ void TestCriticSequencer()
 	NNAssertAlmostEquals(mse, sqd.sum(), 1e-12, "CriticSequencer::forward with no average failed!");
 	
 	critic.backward(inp, tgt);
-	NNAssert(critic.inGrad().reshape(5, 1).addM(dif.reshape(5, 1), -1).square().sum() < 1e-12, "CriticSequencer::backward failed!");
+	NNAssert(critic.inGrad().reshape(5, 1).add(dif.reshape(5, 1), -1).square().sum() < 1e-12, "CriticSequencer::backward failed!");
 }
 
 #endif

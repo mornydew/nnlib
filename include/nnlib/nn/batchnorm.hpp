@@ -2,6 +2,7 @@
 #define NN_BATCHNORM_HPP
 
 #include "module.hpp"
+#include "../math/tensor_math.hpp"
 
 namespace nnlib
 {
@@ -160,13 +161,18 @@ public:
 			
 			// Get unnormalized variances (temporarily stored in m_invStds)
 			for(size_t i = 0; i < n; ++i)
-				m_invStds.addV(input.select(0, i).copy().addV(m_means, -1).square());
+			{
+				Tensor<T> tmp = input.select(0, i).copy();
+				vAdd_v(m_means, tmp, -1);
+				tmp.square();
+				vAdd_v(tmp, m_invStds);
+			}
 			
 			// Update running mean
-			m_runningMeans.scale(1 - m_momentum).addV(m_means.copy().scale(m_momentum));
+			vAdd_v(m_means.copy().scale(m_momentum), m_runningMeans.scale(1 - m_momentum));
 			
 			// Update running variance (normalize as sample)
-			m_runningVars.scale(1 - m_momentum).addV(m_invStds.copy().scale(m_momentum / (n - 1)));
+			vAdd_v(m_invStds.copy().scale(m_momentum / (n - 1)), m_runningVars.scale(1 - m_momentum));
 			
 			// Now normalize variance as population; will invert and sqrt after this if statement
 			m_invStds.scale(norm);
@@ -197,10 +203,12 @@ public:
 			out.copy(input.select(0, i));
 			
 			// Normalize
-			out.addV(means, -1).pointwiseProduct(invStds);
+			vAdd_v(means, out, -1);
+			out.pointwiseProduct(invStds);
 			
 			// Rescale and reshift using the parameters
-			out.pointwiseProduct(m_weights).addV(m_biases);
+			out.pointwiseProduct(m_weights);
+			vAdd_v(m_biases, out);
 		}
 		
 		return m_output;

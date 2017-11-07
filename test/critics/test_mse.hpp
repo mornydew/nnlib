@@ -22,11 +22,11 @@ void TestMSE()
 	
 	critic.average(false);
 	critic.backward(inp, tgt);
-	NNHardAssert(critic.inGrad().addM(dif, -1).square().sum() < 1e-12, "MSE<>::backward with no average failed!");
+	NNHardAssert(critic.inGrad().add(dif, -1).square().sum() < 1e-12, "MSE<>::backward with no average failed!");
 	
 	critic.average(true);
 	critic.backward(inp, tgt);
-	NNHardAssert(critic.inGrad().addM(dif.scale(1.0 / dif.size()), -1).square().sum() < 1e-12, "MSE<>::backward with average failed!");
+	NNHardAssert(critic.inGrad().add(dif.scale(1.0 / dif.size()), -1).square().sum() < 1e-12, "MSE<>::backward with average failed!");
 }
 
 #endif

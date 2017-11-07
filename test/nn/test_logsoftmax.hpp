@@ -25,8 +25,8 @@ void TestLogSoftMax()
 	map.forward(inp);
 	map.backward(inp, grd);
 	
-	NNAssert(map.output().addM(out, -1).square().sum() < 1e-9, "LogSoftMax::forward failed!");
-	NNAssert(map.inGrad().addM(ing, -1).square().sum() < 1e-9, "LogSoftMax::backward failed!");
+	NNAssert(map.output().add(out, -1).square().sum() < 1e-9, "LogSoftMax::forward failed!");
+	NNAssert(map.inGrad().add(ing, -1).square().sum() < 1e-9, "LogSoftMax::backward failed!");
 	
 	TestModule("LogSoftMax", map, inp);
 }

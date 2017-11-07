@@ -2,6 +2,7 @@
 #define TEST_TENSOR_H
 
 #include "nnlib/core/tensor.hpp"
+#include "nnlib/math/tensor_math.hpp"
 #include "nnlib/util/tensor_util.hpp"
 using namespace nnlib;
 
@@ -211,20 +212,21 @@ void TestTensor()
 	for(auto x = view.begin(), y = vector.begin(); x != view.end(); ++x, ++y)
 		NNAssertAlmostEquals(*x, 2 + *y, 1e-12, "Tensor::add(T) failed!");
 	
+	// test tensor math
+	
 	view.resize(12).rand();
 	vector.resize(12).rand();
-	empty = view.copy().addV(vector);
+	empty = view.copy();
+	vAdd_v(vector, empty);
 	for(auto x = view.begin(), y = vector.begin(), z = empty.begin(); x != view.end(); ++x, ++y, ++z)
 		NNAssertAlmostEquals(*x + *y, *z, 1e-12, "Tensor::addV failed!");
-	
-	// test tensor math
 	
 	view = Tensor<>(3, 100).rand();
 	vector = Tensor<>(100).rand();
 	viewOfMoved = Tensor<>(view.size(0));
 	empty = Tensor<>(view.size(0));
 	
-	empty.assignMV(view, vector);
+	vAdd_mv(view, vector, empty, 1, 0);
 	for(size_t i = 0; i < view.size(0); ++i)
 		for(size_t j = 0; j < view.size(1); ++j)
 			viewOfMoved(i) += view(i, j) * vector(j);
@@ -236,7 +238,7 @@ void TestTensor()
 	viewOfMoved.resize(100).zeros();
 	empty.resize(100);
 	
-	empty.assignMTV(view, vector);
+	vAdd_mtv(view, vector, empty, 1, 0);
 	for(size_t i = 0; i < view.size(1); ++i)
 		for(size_t j = 0; j < view.size(0); ++j)
 			viewOfMoved(i) += view(j, i) * vector(j);
@@ -247,7 +249,7 @@ void TestTensor()
 	empty.resize(3, 3);
 	viewOfMoved.resize(3, 3);
 	
-	empty.assignVV(vector, vector);
+	mAdd_vv(vector, vector, empty, 1, 0);
 	for(size_t i = 0; i < vector.size(); ++i)
 		for(size_t j = 0; j < vector.size(); ++j)
 			viewOfMoved(i, j) = vector(i) * vector(j);
@@ -255,7 +257,8 @@ void TestTensor()
 	for(auto x = viewOfMoved.begin(), y = empty.begin(); x != viewOfMoved.end(); ++x, ++y)
 		NNAssertAlmostEquals(*x, *y, 1e-12, "Tensor::assignVV failed!");
 	
-	view = empty.copy().addM(viewOfMoved);
+	view = empty.copy();
+	mAdd_m(viewOfMoved, view);
 	for(size_t i = 0; i < view.size(0); ++i)
 		for(size_t j = 0; j < view.size(1); ++j)
 			NNAssertAlmostEquals(view(i, j), empty(i, j) + viewOfMoved(i, j), 1e-12, "Tensor::addM failed!");
@@ -275,15 +278,15 @@ void TestTensor()
 		}
 	}
 	
-	view.assignMM(empty, vector.transpose().copy());
+	mAdd_mm(empty, vector.transpose().copy(), view, 1, 0);
 	for(auto x = viewOfMoved.begin(), y = view.begin(); x != viewOfMoved.end(); ++x, ++y)
 		NNAssertAlmostEquals(*x, *y, 1e-12, "Tensor::assignMM failed!");
 	
-	view.assignMTM(empty.transpose().copy(), vector.transpose().copy(), 0.5);
+	mAdd_mtm(empty.transpose().copy(), vector.transpose().copy(), view, 0.5, 0);
 	for(auto x = viewOfMoved.begin(), y = view.begin(); x != viewOfMoved.end(); ++x, ++y)
 		NNAssertAlmostEquals(0.5 * *x, *y, 1e-12, "Tensor::assignMM failed!");
 	
-	view.assignMMT(empty, vector, 1, 1);
+	mAdd_mmt(empty, vector, view, 1, 1);
 	for(auto x = viewOfMoved.begin(), y = view.begin(); x != viewOfMoved.end(); ++x, ++y)
 		NNAssertAlmostEquals(1.5 * *x, *y, 1e-12, "Tensor::assignMM failed!");
 	

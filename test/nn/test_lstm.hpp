@@ -66,7 +66,7 @@ void TestLSTM()
 	
 	NNAssertLessThan(outputs.add(out, -1).square().sum(), 1e-6, "LSTM::forward failed!");
 	NNAssertLessThan(inGrads.add(ing, -1).square().sum(), 1e-6, "LSTM::backward failed; wrong inGrad!");
-	NNAssertLessThan(module.grad().addV(prg, -1).square().sum(), 1e-6, "LSTM::backward failed; wrong grad!");
+	NNAssertLessThan(module.grad().add(prg, -1).square().sum(), 1e-6, "LSTM::backward failed; wrong grad!");
 	
 	module.gradClip(0.03);
 	module.forget();

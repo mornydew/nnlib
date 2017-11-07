@@ -2,6 +2,7 @@
 #define NN_LINEAR_HPP
 
 #include "module.hpp"
+#include "../math/tensor_math.hpp"
 
 namespace nnlib
 {
@@ -96,16 +97,16 @@ public:
 		{
 			m_output.resize(m_weights.size(1));
 			if(m_bias)
-				m_output.copy(*m_bias).assignMTV(m_weights, input, 1, 1);
+				vAdd_mtv(m_weights, input, m_output.copy(*m_bias));
 			else
-				m_output.assignMTV(m_weights, input);
+				vAdd_mtv(m_weights, input, m_output, 1, 0);
 		}
 		else if(input.dims() == 2)
 		{
 			m_output.resize(input.size(0), m_weights.size(1));
-			m_output.assignMM(input, m_weights);
+			mAdd_mm(input, m_weights, m_output, 1, 0);
 			if(m_bias)
-				m_output.assignVV(m_ones.resize(input.size(0)).fill(1), *m_bias, 1, 1);
+				mAdd_vv(m_ones.resize(input.size(0)).ones(), *m_bias, m_output);
 		}
 		else
 		{
@@ -120,21 +121,21 @@ public:
 		NNAssertEquals(input.dims(), outGrad.dims(), "Incompatible input and outGrad!");
 		if(input.dims() == 1)
 		{
-			m_weightsGrad.assignVV(input, outGrad, 1, 1);
+			mAdd_vv(input, outGrad, m_weightsGrad);
 			if(m_bias)
-				m_biasGrad->addV(outGrad);
+				vAdd_v(outGrad, *m_biasGrad);
 			
 			m_inGrad.resize(m_weights.size(0));
-			m_inGrad.assignMV(m_weights, outGrad);
+			vAdd_mv(m_weights, outGrad, m_inGrad, 1, 0);
 		}
 		else if(input.dims() == 2)
 		{
-			m_weightsGrad.assignMTM(input, outGrad, 1, 1);
+			mAdd_mtm(input, outGrad, m_weightsGrad);
 			if(m_bias)
-				m_biasGrad->assignMTV(outGrad, m_ones.resize(input.size(0)).fill(1), 1, 1);
+				vAdd_mtv(outGrad, m_ones.resize(input.size(0)).ones(), *m_biasGrad);
 			
 			m_inGrad.resize(input.size(0), m_weights.size(0));
-			m_inGrad.assignMMT(outGrad, m_weights);
+			mAdd_mmt(outGrad, m_weights, m_inGrad, 1, 0);
 		}
 		else
 		{

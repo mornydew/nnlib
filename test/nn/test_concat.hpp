@@ -64,9 +64,9 @@ void TestConcat()
 	module.forward(inp);
 	module.backward(inp, grd);
 	
-	NNAssert(module.output().addM(out, -1).square().sum() < 1e-9, "Concat::forward failed!");
-	NNAssert(module.inGrad().addM(ing, -1).square().sum() < 1e-9, "Concat::backward failed; wrong inGrad!");
-	NNAssert(module.grad().addV(prg, -1).square().sum() < 1e-9, "Concat::backward failed; wrong grad!");
+	NNAssert(module.output().add(out, -1).square().sum() < 1e-9, "Concat::forward failed!");
+	NNAssert(module.inGrad().add(ing, -1).square().sum() < 1e-9, "Concat::backward failed; wrong inGrad!");
+	NNAssert(module.grad().add(prg, -1).square().sum() < 1e-9, "Concat::backward failed; wrong grad!");
 	
 	NNAssert(module.component(0) == linear, "Concat::component failed to get the correct component!");
 	NNAssert(module.components() == 2, "Concat::components failed!");

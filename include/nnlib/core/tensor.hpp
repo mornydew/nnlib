@@ -8,7 +8,6 @@
 
 #include "error.hpp"
 #include "storage.hpp"
-#include "../math/math.hpp"
 #include "../util/random.hpp"
 
 namespace nnlib
@@ -886,220 +885,6 @@ public:
 	
 	// MARK: Algebra
 	
-	/// Add another vector to this vector.
-	Tensor &addV(const Tensor &x, T alpha = 1)
-	{
-		NNAssertEquals(x.dims(), 1, "Expected vector input to addV!");
-		NNAssertEquals(dims(), 1, "Expected vector input to addV!");
-		NNAssertEquals(x.size(), size(), "Incompatible operands in addV!");
-		Math<T>::vAdd_v(
-			x.ptr(), x.size(), x.stride(0),
-			ptr(), stride(0),
-			alpha
-		);
-		return *this;
-	}
-	
-	/// \brief Assigns or adds a matrix/vector with no transposition.
-	///
-	/// Adds the scaled product of A and x to this vector, scaled.
-	/// Sizes must be compatible.
-	/// This method will use acceleration, if present.
-	/// Effectively, using y for this tensor, this method computes `y = alpha * A * x + beta * y`.
-	/// \param A An M x N tensor.
-	/// \param x An N tensor.
-	/// \param alpha How much to scale A * x.
-	/// \param beta How much to scale y.
-	/// \return This tensor, for chaining.
-	Tensor &assignMV(const Tensor &A, const Tensor &x, T alpha = 1, T beta = 0)
-	{
-		NNAssertEquals(A.dims(), 2, "A must be a matrix!");
-		NNAssertEquals(x.dims(), 1, "x must be a vector!");
-		NNAssertEquals(dims(), 1, "This must be a vector!");
-		NNAssertEquals(x.size(0), A.size(1), "Incompatible operands!");
-		NNAssertEquals(size(0), A.size(0), "Incompatible operands!");
-		NNAssertEquals(A.stride(1), 1, "A must be contiguous!");
-		
-		Math<T>::vAdd_mv(
-			A.ptr(), A.size(0), A.size(1), A.stride(0),
-			x.ptr(), x.stride(0),
-			ptr(), stride(0),
-			alpha, beta
-		);
-		return *this;
-	}
-	
-	/// \brief Assigns or adds a matrix/vector with transposition.
-	///
-	/// Adds the scaled product of A and x to this vector, scaled.
-	/// Sizes must be compatible.
-	/// This method will use acceleration, if present.
-	/// Effectively, using y for this tensor, this method computes `y = alpha * A^T * x + beta * y`.
-	/// \param A An N x M tensor.
-	/// \param x An N tensor.
-	/// \param alpha How much to scale A^T * x.
-	/// \param beta How much to scale y.
-	/// \return This tensor, for chaining.
-	Tensor &assignMTV(const Tensor &A, const Tensor &x, T alpha = 1, T beta = 0)
-	{
-		NNAssertEquals(A.dims(), 2, "A must be a matrix!");
-		NNAssertEquals(x.dims(), 1, "x must be a vector!");
-		NNAssertEquals(dims(), 1, "This must be a vector!");
-		NNAssertEquals(x.size(0), A.size(0), "Incompatible operands!");
-		NNAssertEquals(size(0), A.size(1), "Incompatible operands!");
-		NNAssertEquals(A.stride(1), 1, "A must be contiguous!");
-		
-		Math<T>::vAdd_mtv(
-			A.ptr(), A.size(0), A.size(1), A.stride(0),
-			x.ptr(), x.stride(0),
-			ptr(), stride(0),
-			alpha, beta
-		);
-		return *this;
-	}
-	
-	/// \brief Assigns or adds a vector/vector outer product.
-	///
-	/// Adds the scaled outer product of x and y to this matrix.
-	/// Sizes must be compatible.
-	/// This method will use acceleration, if present.
-	/// Effectively, using A for this tensor, this method computes `A = alpha * x^T * y + A`.
-	/// \param x An N tensor.
-	/// \param y An M tensor.
-	/// \param alpha How much to scale x^T * y.
-	/// \return This tensor, for chaining.
-	Tensor &assignVV(const Tensor &x, const Tensor &y, T alpha = 1, T beta = 0)
-	{
-		NNAssertEquals(x.dims(), 1, "x must be a vector!");
-		NNAssertEquals(y.dims(), 1, "y must be a vector!");
-		NNAssertEquals(dims(), 2, "This must be a matrix!");
-		NNAssertEquals(size(0), x.size(0), "Incompatible operands!");
-		NNAssertEquals(size(1), y.size(0), "Incompatible operands!");
-		NNAssertEquals(stride(1), 1, "This must be contiguous!");
-		
-		Math<T>::mAdd_vv(
-			x.ptr(), x.size(), x.stride(0),
-			y.ptr(), y.size(), y.stride(0),
-			ptr(), stride(0),
-			alpha, beta
-		);
-		return *this;
-	}
-	
-	/// Add another matrix to this matrix.
-	Tensor &addM(const Tensor &A, T alpha = 1)
-	{
-		NNAssertEquals(A.dims(), 2, "A must be a matrix!");
-		NNAssertEquals(dims(), 2, "This must be a matrix!");
-		NNAssertEquals(A.shape(), shape(), "Incompatible operands!");
-		
-		Math<T>::mAdd_m(
-			A.ptr(), A.size(0), A.size(1), A.stride(0),
-			ptr(), stride(0),
-			alpha
-		);
-		return *this;
-	}
-	
-	/// \brief Assigns or adds a matrix multiplcation with no transposition.
-	///
-	/// Adds the scaled product of A and B to this matrix, scaled.
-	/// Sizes must be compatible.
-	/// This method will use acceleration, if present.
-	/// Effectively, using C for this tensor, this method computes `C = alpha * A * B + beta * C`.
-	/// \param A An M x K tensor.
-	/// \param B A K x N tensor.
-	/// \param alpha How much to scale A * B.
-	/// \param beta How much to scale C.
-	/// \return This tensor, for chaining.
-	Tensor &assignMM(const Tensor &A, const Tensor &B, T alpha = 1, T beta = 0)
-	{
-		NNAssertEquals(A.dims(), 2, "A must be a matrix!");
-		NNAssertEquals(B.dims(), 2, "B must be a matrix!");
-		NNAssertEquals(dims(), 2, "This must be a matrix!");
-		NNAssertEquals(A.stride(1), 1, "A must be contiguous!");
-		NNAssertEquals(B.stride(1), 1, "B must be contiguous!");
-		NNAssertEquals(stride(1), 1, "This must be contiguous!");
-		NNAssertEquals(A.size(0), size(0), "Incompatible operands!");
-		NNAssertEquals(B.size(1), size(1), "Incompatible operands!");
-		NNAssertEquals(A.size(1), B.size(0), "Incompatible operands!");
-		
-		Math<T>::mAdd_mm(
-			A.size(0), B.size(1), A.size(1),
-			A.ptr(), A.stride(0),
-			B.ptr(), B.stride(0),
-			ptr(), stride(0),
-			alpha, beta
-		);
-		return *this;
-	}
-	
-	/// \brief Assigns or adds a matrix multiplcation with transposition on the first operand.
-	///
-	/// Adds the scaled product of A and B to this matrix, scaled.
-	/// Sizes must be compatible.
-	/// This method will use acceleration, if present.
-	/// Effectively, using C for this tensor, this method computes `C = alpha * A^T * B + beta * C`.
-	/// \param A A K x M tensor.
-	/// \param B A K x N tensor.
-	/// \param alpha How much to scale A^T * B.
-	/// \param beta How much to scale C.
-	/// \return This tensor, for chaining.
-	Tensor &assignMTM(const Tensor &A, const Tensor &B, T alpha = 1, T beta = 0)
-	{
-		NNAssertEquals(A.dims(), 2, "A must be a matrix!");
-		NNAssertEquals(B.dims(), 2, "B must be a matrix!");
-		NNAssertEquals(dims(), 2, "This must be a matrix!");
-		NNAssertEquals(A.stride(1), 1, "A must be contiguous!");
-		NNAssertEquals(B.stride(1), 1, "B must be contiguous!");
-		NNAssertEquals(stride(1), 1, "This must be contiguous!");
-		NNAssertEquals(A.size(1), size(0), "Incompatible operands!");
-		NNAssertEquals(B.size(1), size(1), "Incompatible operands!");
-		NNAssertEquals(A.size(0), B.size(0), "Incompatible operands!");
-		
-		Math<T>::mAdd_mtm(
-			A.size(1), B.size(1), A.size(0),
-			A.ptr(), A.stride(0),
-			B.ptr(), B.stride(0),
-			ptr(), stride(0),
-			alpha, beta
-		);
-		return *this;
-	}
-	
-	/// \brief Assigns or adds a matrix multiplcation with transposition on the second operand.
-	///
-	/// Adds the scaled product of A and B to this matrix, scaled.
-	/// Sizes must be compatible.
-	/// This method will use acceleration, if present.
-	/// Effectively, using C for this tensor, this method computes `C = alpha * A * B^T + beta * C`.
-	/// \param A An M x K tensor.
-	/// \param B An N x K tensor.
-	/// \param alpha How much to scale A * B^T.
-	/// \param beta How much to scale C.
-	/// \return This tensor, for chaining.
-	Tensor &assignMMT(const Tensor &A, const Tensor &B, T alpha = 1, T beta = 0)
-	{
-		NNAssertEquals(A.dims(), 2, "A must be a matrix!");
-		NNAssertEquals(B.dims(), 2, "B must be a matrix!");
-		NNAssertEquals(dims(), 2, "This must be a matrix!");
-		NNAssertEquals(A.stride(1), 1, "A must be contiguous!");
-		NNAssertEquals(B.stride(1), 1, "B must be contiguous!");
-		NNAssertEquals(stride(1), 1, "This must be contiguous!");
-		NNAssertEquals(A.size(0), size(0), "Incompatible operands!");
-		NNAssertEquals(B.size(0), size(1), "Incompatible operands!");
-		NNAssertEquals(A.size(1), B.size(1), "Incompatible operands!");
-		
-		Math<T>::mAdd_mmt(
-			A.size(0), B.size(0), A.size(1),
-			A.ptr(), A.stride(0),
-			B.ptr(), B.stride(0),
-			ptr(), stride(0),
-			alpha, beta
-		);
-		return *this;
-	}
-	
 	/// Hadamard/elementwise/pointwise product.
 	Tensor &pointwiseProduct(const Tensor &x)
 	{
@@ -1116,91 +901,22 @@ public:
 	/// \brief Compute elementwise/pointwise sum (general purpose).
 	///
 	/// This is a general purpose function for any size of tensor.
-	/// For vectors, addV is called; for matrices, addM is called.
 	Tensor &add(const Tensor &x, T alpha = 1)
 	{
 		NNAssertEquals(shape(), x.shape(), "Incompatible operands to add!");
-		if(m_dims.size() == 1)
-			return addV(x, alpha);
-		else if(m_dims.size() == 2)
-			return addM(x, alpha);
-		else
+		auto i = x.begin();
+		for(T &el : *this)
 		{
-			auto i = x.begin();
-			for(T &el : *this)
-			{
-				el += *i * alpha;
-				++i;
-			}
-			return *this;
+			el += *i * alpha;
+			++i;
 		}
+		return *this;
 	}
 	
 	/// Perform a pointwise product with the current tensor, squaring it.
 	Tensor &square()
 	{
 		return pointwiseProduct(*this);
-	}
-	
-	/// \brief Sparsify the current dense tensor, dropping values with magnitude less than epsilon.
-	///
-	/// The output will be a matrix. The number of rows will be the number of non-zero elements;
-	/// the number of columns will be D + 1 where D is the number of dimensions in the dense tensor.
-	/// The first D columns in a row are the indices and the last is the value in that slot.
-	/// The first row in the output will be the sizes of each dimension with one unused column.
-	///
-	/// For example, a truncated identity matrix of size 3x5 could be represented like this:
-	///
-	///     3 5 0.0   <-- size
-	///     0 0 1.0
-	///     1 1 1.0
-	///     2 2 1.0
-	Tensor sparsify(T epsilon = 1e-12)
-	{
-		size_t count = 0;
-		for(auto x : *this)
-			if(std::abs(x) > epsilon)
-				++count;
-		
-		Tensor<T> sparse(count, m_dims.size() + 1);
-		
-		size_t idx = 0;
-		for(auto i = begin(), iend = end(); i != iend; ++i)
-		{
-			if(std::abs(*i) > epsilon)
-			{
-				for(size_t j = 0, jend = i.indices().size(); j != jend; ++j)
-					sparse(idx, j) = i.indices()(j);
-				sparse(idx, i.indices().size()) = *i;
-				++idx;
-			}
-		}
-		
-		return sparse;
-	}
-
-	/// \brief Unsparsify the current sparse tensor.
-	///
-	/// See sparsify for an explanation of sparse tensors.
-	Tensor unsparsify()
-	{
-		NNAssertEquals(m_dims.size(), 2, "Sparse tensors must be represented by matrices!");
-		
-		Storage<size_t> dims(m_dims[1] - 1);
-		for(size_t i = 0, end = dims.size(); i != end; ++i)
-			dims[i] = (*this)(0, i);
-		
-		Tensor<T> dense(dims, true);
-		dense.fill(0);
-		
-		for(size_t i = 1, end = m_dims[0], jend = m_dims[1] - 1; i != end; ++i)
-		{
-			for(size_t j = 0; j != jend; ++j)
-				dims[j] = (*this)(i, j);
-			dense(dims) = (*this)(i, jend);
-		}
-		
-		return dense;
 	}
 	
 	// MARK: Functional

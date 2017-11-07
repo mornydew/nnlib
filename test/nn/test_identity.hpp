@@ -16,8 +16,8 @@ void TestIdentity()
 	map.forward(inp);
 	map.backward(inp, grd);
 	
-	NNAssert(map.output().copy().addM(inp, -1).square().sum() < 1e-9, "Identity::forward failed!");
-	NNAssert(map.inGrad().copy().addM(grd, -1).square().sum() < 1e-9, "Identity::backward failed!");
+	NNAssert(map.output().copy().add(inp, -1).square().sum() < 1e-9, "Identity::forward failed!");
+	NNAssert(map.inGrad().copy().add(grd, -1).square().sum() < 1e-9, "Identity::backward failed!");
 	
 	TestModule("Identity", map, inp);
 }

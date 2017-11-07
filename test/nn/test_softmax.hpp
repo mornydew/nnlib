@@ -25,8 +25,8 @@ void TestSoftMax()
 	map.forward(inp);
 	map.backward(inp, grd);
 	
-	NNAssert(map.output().addM(out, -1).square().sum() < 1e-9, "SoftMax::forward failed!");
-	NNAssert(map.inGrad().addM(ing, -1).square().sum() < 1e-9, "SoftMax::backward failed!");
+	NNAssert(map.output().add(out, -1).square().sum() < 1e-9, "SoftMax::forward failed!");
+	NNAssert(map.inGrad().add(ing, -1).square().sum() < 1e-9, "SoftMax::backward failed!");
 	
 	TestModule("SoftMax", map, inp);
 }

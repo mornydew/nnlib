@@ -23,8 +23,8 @@ void TestTanH()
 	map.forward(inp);
 	map.backward(inp, grd);
 	
-	NNAssert(map.output().copy().addM(out, -1).square().sum() < 1e-9, "TanH::forward failed!");
-	NNAssert(map.inGrad().copy().addM(ing, -1).square().sum() < 1e-9, "TanH::backward failed!");
+	NNAssert(map.output().copy().add(out, -1).square().sum() < 1e-9, "TanH::forward failed!");
+	NNAssert(map.inGrad().copy().add(ing, -1).square().sum() < 1e-9, "TanH::backward failed!");
 	
 	TestMap("TanH", map, inp);
 }

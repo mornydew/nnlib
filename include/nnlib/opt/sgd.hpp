@@ -2,6 +2,7 @@
 #define OPT_SGD_HPP
 
 #include "optimizer.hpp"
+#include "../math/tensor_math.hpp"
 
 namespace nnlib
 {
@@ -58,14 +59,14 @@ public:
 		{
 			// apply momentum
 			m_velocity.scale(m_momentum);
-			m_velocity.addV(m_grads);
+			vAdd_v(m_grads, m_velocity);
 			
 			// Nesterov step
-			m_grads.addV(m_velocity, m_momentum);
+			vAdd_v(m_velocity, m_grads, m_momentum);
 		}
 		
 		// update parameters
-		m_parameters.addV(m_grads, -m_learningRate);
+		vAdd_v(m_grads, m_parameters, -m_learningRate);
 		
 		return *this;
 	}

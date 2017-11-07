@@ -10,8 +10,9 @@
 #include "nnlib/critics/mse.hpp"
 
 /// Math
-/// \note Specific implementations are included from math.h
+/// \note Specific implementations are included from math.hpp
 #include "nnlib/math/math.hpp"
+#include "nnlib/math/tensor_math.hpp"
 
 /// Neural Networks
 #include "nnlib/nn/batchnorm.hpp"

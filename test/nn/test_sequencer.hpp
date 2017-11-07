@@ -60,7 +60,7 @@ void TestSequencer()
 	
 	NNAssertLessThan(module.output().add(out, -1).square().sum(), 1e-9, "Sequencer::forward failed!");
 	NNAssertLessThan(module.inGrad().add(ing, -1).square().sum(), 1e-9, "Sequencer::backward failed; wrong inGrad!");
-	NNAssertLessThan(module.grad().addV(prg, -1).square().sum(), 1e-9, "Sequencer::backward failed; wrong grad!");
+	NNAssertLessThan(module.grad().add(prg, -1).square().sum(), 1e-9, "Sequencer::backward failed; wrong grad!");
 	
 	module.forget();
 	module.reverse(true);
